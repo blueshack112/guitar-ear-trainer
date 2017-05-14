@@ -11,3 +11,6 @@ Expected working:
 	Even after being easy and faster, training one's ear to interpret intervals requires a lot of practice, this is where this software should help. The software will be loaded with the sound of each string's each fret separately. A 2D array will construct a virtual guitar, using variable to play different shapes of music intervals can create a question, one which will be answered by the user. Feedback will be given by the software.
 
 More updates and added features will have this readme document updated.
+
+5-14-2017: Finally found the best way of storing the whole 2D array of wav files into bytes. They can be easily written to temporary file now, and played.
+	Will not focus largely on the GUI of the application, Netbeans can give a good enough GUI.
