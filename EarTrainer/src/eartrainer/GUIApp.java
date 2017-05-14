@@ -50,10 +50,10 @@ public class GUIApp extends javax.swing.JFrame {
     protected static boolean gotFunctionToPlay;
     protected static boolean stringAndFretSet;
     protected static boolean filesReady;
-    protected static boolean played;
     protected static boolean filesSaved;
     protected static int functionToPlay;
     protected static int functionsToPlay;
+    protected static int playCounter;
     protected static Worker functions[];
 
     public GUIApp() {
@@ -69,7 +69,7 @@ public class GUIApp extends javax.swing.JFrame {
         functions[7] = new SetSandFforO();
 
         functionsToPlay = 1;
-        played = false;
+        playCounter = 1;
         filesSaved = false;
         stringAndFretSet = false;
         filesReady = false;
@@ -362,17 +362,26 @@ public class GUIApp extends javax.swing.JFrame {
 
     private void trybutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_trybutMouseClicked
         // TODO add your handling code here:
-        setFunctionToPlay();
-        debug2.setText("func: " + functionToPlay);
-        chooseStringAndFret();
-        debug4.setText("string: " + firstStringToPlay);
-        debug3.setText("fret: " + firstFretToPlay);
-        saveByteArraysOfFileToPlay();
-        saveFilesAndPlay();
-        gotFunctionToPlay = false;
-        stringAndFretSet = false;
-        filesSaved = false;
-        played = false;
+        if (gotFunctionToPlay == false) {
+            setFunctionToPlay();
+            debug2.setText("func: " + functionToPlay);
+        }
+        if (stringAndFretSet == false) {
+            chooseStringAndFret();
+            debug4.setText("string: " + firstStringToPlay);
+            debug3.setText("fret: " + firstFretToPlay);
+        }
+        if (filesSaved == false) {
+            saveByteArraysOfFileToPlay();
+            saveFilesAndPlay();
+        }
+
+        if (playCounter >= 6) {
+            gotFunctionToPlay = false;
+            stringAndFretSet = false;
+            filesSaved = false;
+            playCounter =  1;
+        }
     }//GEN-LAST:event_trybutMouseClicked
 
     private void check2ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check2ItemStateChanged
@@ -690,7 +699,7 @@ public class GUIApp extends javax.swing.JFrame {
     }
 
     private void saveFilesAndPlay() {
-        if (played == false) {
+        if (playCounter <= 5) {
             try {
                 if (!filesSaved) {
                     note1 = File.createTempFile("note1", ".wav");
@@ -720,7 +729,7 @@ public class GUIApp extends javax.swing.JFrame {
                 }
                 clip.close();
 
-                Thread.sleep(2000);
+                Thread.sleep(200);
 
                 clip = AudioSystem.getClip();
                 clip.open(AudioSystem.getAudioInputStream(note2));
@@ -733,13 +742,13 @@ public class GUIApp extends javax.swing.JFrame {
                 }
                 clip.close();
 
-                played = true;
+                playCounter++;
 
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(null, "Error reading files!");
             }
-
         }
+
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox check2;
