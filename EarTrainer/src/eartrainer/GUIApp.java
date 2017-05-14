@@ -31,8 +31,8 @@ import java.util.Date;
 public class GUIApp extends javax.swing.JFrame {
 
     private static Guitar g;
-    private static File currentRunning1;
-    private static File currentRunning2;
+    private static File note1;
+    private static File note2;
     private static int firstStringToPlay;
     private static int firstFretToPlay;
     private static int nextStringToPlay;
@@ -627,6 +627,9 @@ public class GUIApp extends javax.swing.JFrame {
                 stringAndFretSet = true;
             }
         }
+    }
+    public void createFilesToPlay () {
+        
     }
 
 
