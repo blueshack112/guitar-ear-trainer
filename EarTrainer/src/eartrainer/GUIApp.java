@@ -11,6 +11,17 @@ package eartrainer;
 5-> Major seven
 6-> Octave
 
+ */ //array mapping of notToPlay
+
+/*
+1-> Unison
+2-> mjor 2
+3-> major 3
+4-> perfect 4
+5-> perfect 5
+6-> major 6
+7-> major 7
+8-> octave
  */
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,13 +33,22 @@ public class GUIApp extends javax.swing.JFrame {
     private static Guitar g;
     private static File currentRunning1;
     private static File currentRunning2;
-    private static int stringToPlay;
-    private static int fretToPlay;
-    private static boolean notToplay [] = {false,false,false,false,false,false,false};
+    private static int firstStringToPlay;
+    private static int firstFretToPlay;
+    private static int nextStringToPlay;
+    private static int nextFretToPlay;
+    private static boolean notToPlay[] = {false, false, false, false, false, false, false};
+    private static boolean gotFunctionToPlay;
+    private static boolean stringAndFretSet;
     private static Date date;
+    private int functionToPlay;
+    private int functionsToPlay;
 
     public GUIApp() {
         initComponents();
+        functionsToPlay = 1;
+        stringAndFretSet = false;
+        gotFunctionToPlay = false;
         major2.setVisible(false);
         major3.setVisible(false);
         perfect4.setVisible(false);
@@ -296,11 +316,11 @@ public class GUIApp extends javax.swing.JFrame {
         if (pFou.isSelected()) {
             perfect4.setVisible(true);
             perfect4.setEnabled(true);
-            notToplay[2] = true;
+            notToPlay[2] = true;
         } else {
             perfect4.setVisible(false);
             perfect4.setEnabled(false);
-            notToplay[2] = false;
+            notToPlay[2] = false;
         }
     }//GEN-LAST:event_pFouActionPerformed
 
@@ -309,11 +329,13 @@ public class GUIApp extends javax.swing.JFrame {
         if (mSec.isSelected()) {
             major2.setVisible(true);
             major2.setEnabled(true);
-            notToplay[0] = true;
+            notToPlay[0] = true;
+            functionsToPlay++;
         } else {
             major2.setVisible(false);
             major2.setEnabled(false);
-            notToplay[0] = false;
+            notToPlay[0] = false;
+            functionsToPlay--;
         }
     }//GEN-LAST:event_mSecActionPerformed
 
@@ -322,11 +344,13 @@ public class GUIApp extends javax.swing.JFrame {
         if (mThi.isSelected()) {
             major3.setVisible(true);
             major3.setEnabled(true);
-            notToplay[1] = true;
+            notToPlay[1] = true;
+            functionsToPlay++;
         } else {
             major3.setVisible(false);
             major3.setEnabled(false);
-            notToplay[1] = false;
+            notToPlay[1] = false;
+            functionsToPlay--;
         }
     }//GEN-LAST:event_mThiActionPerformed
 
@@ -335,11 +359,13 @@ public class GUIApp extends javax.swing.JFrame {
         if (pFif.isSelected()) {
             perfect5.setVisible(true);
             perfect5.setEnabled(true);
-            notToplay[3] = true;
+            notToPlay[3] = true;
+            functionsToPlay++;
         } else {
             perfect5.setVisible(false);
             perfect5.setEnabled(false);
-            notToplay[3] = false;
+            notToPlay[3] = false;
+            functionsToPlay--;
         }
     }//GEN-LAST:event_pFifActionPerformed
 
@@ -348,11 +374,13 @@ public class GUIApp extends javax.swing.JFrame {
         if (mSix.isSelected()) {
             major6.setVisible(true);
             major6.setEnabled(true);
-            notToplay[4] = true;
+            notToPlay[4] = true;
+            functionsToPlay++;
         } else {
             major6.setVisible(false);
             major6.setEnabled(false);
-            notToplay[4] = false;
+            notToPlay[4] = false;
+            functionsToPlay--;
         }
     }//GEN-LAST:event_mSixActionPerformed
 
@@ -361,11 +389,13 @@ public class GUIApp extends javax.swing.JFrame {
         if (mSev.isSelected()) {
             major7.setVisible(true);
             major7.setEnabled(true);
-            notToplay[5] = true;
+            notToPlay[5] = true;
+            functionsToPlay++;
         } else {
             major7.setVisible(false);
             major7.setEnabled(false);
-            notToplay[5] = false;
+            notToPlay[5] = false;
+            functionsToPlay--;
         }
     }//GEN-LAST:event_mSevActionPerformed
 
@@ -374,17 +404,19 @@ public class GUIApp extends javax.swing.JFrame {
         if (oct.isSelected()) {
             octave.setVisible(true);
             octave.setEnabled(true);
-            notToplay[6] = true;
+            notToPlay[6] = true;
+            functionsToPlay++;
         } else {
             octave.setVisible(false);
             octave.setEnabled(false);
-            notToplay[6] = false;
+            notToPlay[6] = false;
+            functionsToPlay--;
         }
     }//GEN-LAST:event_octActionPerformed
 
     private void mSecPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_mSecPropertyChange
         // TODO add your handling code here:
-        
+
     }//GEN-LAST:event_mSecPropertyChange
 
     public static void main() throws Exception {
@@ -423,11 +455,178 @@ public class GUIApp extends javax.swing.JFrame {
                     Thread.sleep(3000);
                 } catch (Exception e) {
                 }
-                
 
                 new GUIApp().setVisible(true);
             }
         });
+    }
+
+    private void getFunctionToPlay() {
+        int random;
+        if (functionsToPlay == 1) {
+            functionToPlay = 1;
+        } else {
+            while (gotFunctionToPlay == false) {
+                random = (int) (Math.random() * 8 + 1);
+                if (random == 1) {
+                    functionToPlay = 1;
+                } else {
+                    for (int i = 0; i <= 6; i++) {
+                        if (notToPlay[i] == true && i + 2 == random) {
+                            functionToPlay = random;
+                            gotFunctionToPlay = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void chooseStringAndFret() { //choose string and fret based on the funtion to play
+        switch (functionToPlay) {
+            case 1:
+                setSandFforUnison();
+                break;
+            case 2:
+                setSandFforM2();
+                break;
+            case 3:
+                setSandFforM3();
+                break;
+            case 4:
+                setSandFforP4();
+                break;
+            case 5:
+                setSandFforP5();
+                break;
+            case 6:
+                setSandFforM6();
+                break;
+            case 7:
+                setSandFforM7();
+                break;
+            case 8:
+                setSandFforO();
+                break;
+
+        }
+    }
+
+    private void setSandFforUnison() {
+        int randomS, randomF;
+        int nextS, nextF;
+        randomS = (int) Math.random() * 5;
+        randomF = (int) Math.random() * 13;
+        firstStringToPlay = randomS;
+        firstFretToPlay = randomF;
+        nextStringToPlay = randomS;
+        nextFretToPlay = randomF;
+        stringAndFretSet = true;
+    }
+
+    private void setSandFforM2() {
+        int randomS, randomF;
+        while (!stringAndFretSet) {
+            randomS = (int)Math.random()*5;
+            randomF = (int)Math.random()*13;
+            if(randomF<=10) {
+                firstStringToPlay = randomS;
+                firstFretToPlay = randomF;
+                nextStringToPlay = randomS;
+                nextFretToPlay = randomF+2;
+                stringAndFretSet = true;                
+            }
+        }
+    }
+
+    private void setSandFforM3() {
+        int randomS, randomF;
+        while (!stringAndFretSet) {
+            randomS = (int)Math.random()*5;
+            randomF = (int)Math.random()*13;
+            if(randomS<=3&&randomF>=1) {
+                firstStringToPlay = randomS;
+                firstFretToPlay = randomF;
+                nextStringToPlay = randomS+1;
+                nextFretToPlay = randomF-1;
+                stringAndFretSet = true;
+            }
+        }
+    }
+
+    private void setSandFforP4() {
+        int randomS, randomF;
+        while (!stringAndFretSet) {
+            randomS = (int)Math.random()*5;
+            randomF = (int)Math.random()*13;
+            if(randomS<=3) {
+                firstStringToPlay = randomS;
+                firstFretToPlay = randomF;
+                nextStringToPlay = randomS+1;
+                nextFretToPlay = randomF;
+                stringAndFretSet = true;
+            }
+        }
+    }
+
+    private void setSandFforP5() {
+        int randomS, randomF;
+        while (!stringAndFretSet) {
+            randomS = (int)Math.random()*5;
+            randomF = (int)Math.random()*13;
+            if(randomS<=3&&randomF<=10) {
+                firstStringToPlay = randomS;
+                firstFretToPlay = randomF;
+                nextStringToPlay = randomS+1;
+                nextFretToPlay = randomF+2;
+                stringAndFretSet = true;
+            }
+        }
+    }
+
+    private void setSandFforM6() {
+        int randomS, randomF;
+        while (!stringAndFretSet) {
+            randomS = (int)Math.random()*5;
+            randomF = (int)Math.random()*14;
+            if(randomS<=2&&randomF>=1) {
+                firstStringToPlay = randomS;
+                firstFretToPlay = randomF;
+                nextStringToPlay = randomS+2;
+                nextFretToPlay = randomF-1;
+                stringAndFretSet = true;
+            }
+        }
+    }
+
+    private void setSandFforM7() {
+        int randomS, randomF;
+        while (!stringAndFretSet) {
+            randomS = (int)Math.random()*5;
+            randomF = (int)Math.random()*14;
+            if(randomS<=2&&randomF<=11) {
+                firstStringToPlay = randomS;
+                firstFretToPlay = randomF;
+                nextStringToPlay = randomS+2;
+                nextFretToPlay = randomF+1;
+                stringAndFretSet = true;
+            }
+        }
+    }
+
+    private void setSandFforO() {
+        int randomS, randomF;
+        while (!stringAndFretSet) {
+            randomS = (int)Math.random()*5;
+            randomF = (int)Math.random()*14;
+            if(randomS<=2&&randomF<=10) {
+                firstStringToPlay = randomS;
+                firstFretToPlay = randomF;
+                nextStringToPlay = randomS+2;
+                nextFretToPlay = randomF+2;
+                stringAndFretSet = true;
+            }
+        }
     }
 
 
