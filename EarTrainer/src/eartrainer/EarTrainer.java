@@ -11,3 +11,6 @@ public class EarTrainer {
     }
 }    
 
+interface Worker {
+    void work();
+}

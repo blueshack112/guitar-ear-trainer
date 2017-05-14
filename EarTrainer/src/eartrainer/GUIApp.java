@@ -23,31 +23,56 @@ package eartrainer;
 7-> major 7
 8-> octave
  */
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.JOptionPane;
 
 public class GUIApp extends javax.swing.JFrame {
 
-    private static Guitar g;
-    private static File note1;
-    private static File note2;
-    private static int firstStringToPlay;
-    private static int firstFretToPlay;
-    private static int nextStringToPlay;
-    private static int nextFretToPlay;
-    private static boolean notToPlay[] = {false, false, false, false, false, false, false};
-    private static boolean gotFunctionToPlay;
-    private static boolean stringAndFretSet;
-    private static Date date;
-    private int functionToPlay;
-    private int functionsToPlay;
+    protected static Guitar g;
+    protected static byte[] note1Byte;
+    protected static byte[] note2Byte;
+    protected static File note1;
+    protected static File note2;
+    protected static int firstStringToPlay;
+    protected static int firstFretToPlay;
+    protected static int nextStringToPlay;
+    protected static int nextFretToPlay;
+    protected static boolean gotFunctionToPlay;
+    protected static boolean stringAndFretSet;
+    protected static boolean filesReady;
+    protected static boolean played;
+    protected static boolean filesSaved;
+    protected static int functionToPlay;
+    protected static int functionsToPlay;
+    protected static Worker functions[];
 
     public GUIApp() {
         initComponents();
+        functions = new Worker[8];
+        functions[0] = new SetSandFforUnison();
+        functions[1] = new SetSandFforM2();
+        functions[2] = new SetSandFforM3();
+        functions[3] = new SetSandFforP4();
+        functions[4] = new SetSandFforP5();
+        functions[5] = new SetSandFforM6();
+        functions[6] = new SetSandFforM7();
+        functions[7] = new SetSandFforO();
+
         functionsToPlay = 1;
+        played = false;
+        filesSaved = false;
         stringAndFretSet = false;
+        filesReady = false;
         gotFunctionToPlay = false;
         major2.setVisible(false);
         major3.setVisible(false);
@@ -67,13 +92,13 @@ public class GUIApp extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        mSec = new javax.swing.JCheckBox();
-        mThi = new javax.swing.JCheckBox();
-        pFou = new javax.swing.JCheckBox();
-        pFif = new javax.swing.JCheckBox();
-        mSix = new javax.swing.JCheckBox();
-        mSev = new javax.swing.JCheckBox();
-        oct = new javax.swing.JCheckBox();
+        check2 = new javax.swing.JCheckBox();
+        check3 = new javax.swing.JCheckBox();
+        check4 = new javax.swing.JCheckBox();
+        check5 = new javax.swing.JCheckBox();
+        check6 = new javax.swing.JCheckBox();
+        check7 = new javax.swing.JCheckBox();
+        check8 = new javax.swing.JCheckBox();
         rooteNote = new javax.swing.JLabel();
         major2 = new javax.swing.JLabel();
         major3 = new javax.swing.JLabel();
@@ -87,6 +112,11 @@ public class GUIApp extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         questionsAmount = new javax.swing.JLabel();
         correctAnsAmount = new javax.swing.JLabel();
+        trybut = new javax.swing.JButton();
+        debug1 = new javax.swing.JLabel();
+        debug2 = new javax.swing.JLabel();
+        debug3 = new javax.swing.JLabel();
+        debug4 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
@@ -114,81 +144,75 @@ public class GUIApp extends javax.swing.JFrame {
         jPanel3.setOpaque(false);
         jPanel3.setLayout(new java.awt.GridLayout(7, 1));
 
-        mSec.setForeground(new java.awt.Color(102, 102, 255));
-        mSec.setText("Major Second");
-        mSec.setOpaque(false);
-        mSec.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mSecActionPerformed(evt);
+        check2.setForeground(new java.awt.Color(0, 153, 255));
+        check2.setText("Major Second");
+        check2.setOpaque(false);
+        check2.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                check2ItemStateChanged(evt);
             }
         });
-        mSec.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                mSecPropertyChange(evt);
-            }
-        });
-        jPanel3.add(mSec);
+        jPanel3.add(check2);
 
-        mThi.setForeground(new java.awt.Color(102, 102, 255));
-        mThi.setText("Major Third");
-        mThi.setOpaque(false);
-        mThi.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mThiActionPerformed(evt);
+        check3.setForeground(new java.awt.Color(0, 153, 255));
+        check3.setText("Major Third");
+        check3.setOpaque(false);
+        check3.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                check3ItemStateChanged(evt);
             }
         });
-        jPanel3.add(mThi);
+        jPanel3.add(check3);
 
-        pFou.setForeground(new java.awt.Color(102, 102, 255));
-        pFou.setText("Perfect Fourth");
-        pFou.setOpaque(false);
-        pFou.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pFouActionPerformed(evt);
+        check4.setForeground(new java.awt.Color(0, 153, 255));
+        check4.setText("Perfect Fourth");
+        check4.setOpaque(false);
+        check4.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                check4ItemStateChanged(evt);
             }
         });
-        jPanel3.add(pFou);
+        jPanel3.add(check4);
 
-        pFif.setBackground(new java.awt.Color(0, 0, 0));
-        pFif.setForeground(new java.awt.Color(102, 102, 255));
-        pFif.setText("Pefect Fifth");
-        pFif.setOpaque(false);
-        pFif.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pFifActionPerformed(evt);
+        check5.setForeground(new java.awt.Color(0, 153, 255));
+        check5.setText("Perfect Fifth");
+        check5.setOpaque(false);
+        check5.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                check5ItemStateChanged(evt);
             }
         });
-        jPanel3.add(pFif);
+        jPanel3.add(check5);
 
-        mSix.setForeground(new java.awt.Color(102, 102, 255));
-        mSix.setText("Major Six");
-        mSix.setOpaque(false);
-        mSix.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mSixActionPerformed(evt);
+        check6.setForeground(new java.awt.Color(0, 153, 255));
+        check6.setText("Major Six");
+        check6.setOpaque(false);
+        check6.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                check6ItemStateChanged(evt);
             }
         });
-        jPanel3.add(mSix);
+        jPanel3.add(check6);
 
-        mSev.setForeground(new java.awt.Color(102, 102, 255));
-        mSev.setText("Major Seven");
-        mSev.setOpaque(false);
-        mSev.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mSevActionPerformed(evt);
+        check7.setForeground(new java.awt.Color(0, 153, 255));
+        check7.setText("Major Seven");
+        check7.setOpaque(false);
+        check7.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                check7ItemStateChanged(evt);
             }
         });
-        jPanel3.add(mSev);
+        jPanel3.add(check7);
 
-        oct.setForeground(new java.awt.Color(102, 102, 255));
-        oct.setText("Octave");
-        oct.setOpaque(false);
-        oct.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                octActionPerformed(evt);
+        check8.setForeground(new java.awt.Color(0, 153, 255));
+        check8.setText("Octave");
+        check8.setOpaque(false);
+        check8.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                check8ItemStateChanged(evt);
             }
         });
-        jPanel3.add(oct);
+        jPanel3.add(check8);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -210,7 +234,7 @@ public class GUIApp extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 8, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -286,13 +310,38 @@ public class GUIApp extends javax.swing.JFrame {
         jPanel1.add(correctAnsAmount);
         correctAnsAmount.setBounds(110, 70, 50, 20);
 
+        trybut.setText("try");
+        trybut.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                trybutMouseClicked(evt);
+            }
+        });
+        jPanel1.add(trybut);
+        trybut.setBounds(20, 230, 47, 23);
+
+        debug1.setForeground(new java.awt.Color(0, 255, 0));
+        jPanel1.add(debug1);
+        debug1.setBounds(20, 90, 180, 30);
+
+        debug2.setForeground(new java.awt.Color(0, 255, 0));
+        jPanel1.add(debug2);
+        debug2.setBounds(20, 120, 100, 30);
+
+        debug3.setForeground(new java.awt.Color(0, 255, 0));
+        jPanel1.add(debug3);
+        debug3.setBounds(80, 220, 90, 30);
+
+        debug4.setForeground(new java.awt.Color(0, 255, 0));
+        jPanel1.add(debug4);
+        debug4.setBounds(50, 170, 100, 30);
+
         jLabel1.setIcon(new javax.swing.ImageIcon("C:\\HAA\\Ear trainer\\EarTrainer\\resources\\wp101.jpg")); // NOI18N
         jLabel1.setOpaque(true);
         jPanel1.add(jLabel1);
         jLabel1.setBounds(0, 0, 570, 339);
 
         getContentPane().add(jPanel1);
-        jPanel1.setBounds(0, 0, 847, 339);
+        jPanel1.setBounds(-1, -1, 570, 350);
 
         jMenuBar1.setBackground(new java.awt.Color(102, 102, 102));
         jMenuBar1.setOpaque(false);
@@ -311,113 +360,130 @@ public class GUIApp extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void pFouActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pFouActionPerformed
+    private void trybutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_trybutMouseClicked
         // TODO add your handling code here:
-        if (pFou.isSelected()) {
-            perfect4.setVisible(true);
-            perfect4.setEnabled(true);
-            notToPlay[2] = true;
-        } else {
-            perfect4.setVisible(false);
-            perfect4.setEnabled(false);
-            notToPlay[2] = false;
-        }
-    }//GEN-LAST:event_pFouActionPerformed
+        setFunctionToPlay();
+        debug2.setText("func: " + functionToPlay);
+        chooseStringAndFret();
+        debug4.setText("string: " + firstStringToPlay);
+        debug3.setText("fret: " + firstFretToPlay);
+        saveByteArraysOfFileToPlay();
+        saveFilesAndPlay();
+        gotFunctionToPlay = false;
+        stringAndFretSet = false;
+        filesSaved = false;
+        played = false;
+    }//GEN-LAST:event_trybutMouseClicked
 
-    private void mSecActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mSecActionPerformed
+    private void check2ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check2ItemStateChanged
         // TODO add your handling code here:
-        if (mSec.isSelected()) {
+        if (check2.isSelected()) {
+            functionsToPlay++;
             major2.setVisible(true);
             major2.setEnabled(true);
-            notToPlay[0] = true;
-            functionsToPlay++;
         } else {
+            functionsToPlay--;
             major2.setVisible(false);
             major2.setEnabled(false);
-            notToPlay[0] = false;
-            functionsToPlay--;
+            check3.setSelected(false);
         }
-    }//GEN-LAST:event_mSecActionPerformed
+        debug1.setText("functions: " + functionsToPlay);
+    }//GEN-LAST:event_check2ItemStateChanged
 
-    private void mThiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mThiActionPerformed
+    private void check3ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check3ItemStateChanged
         // TODO add your handling code here:
-        if (mThi.isSelected()) {
+        if (check3.isSelected()) {
+            functionsToPlay++;
             major3.setVisible(true);
             major3.setEnabled(true);
-            notToPlay[1] = true;
-            functionsToPlay++;
+            check2.setSelected(true);
         } else {
+            functionsToPlay--;
             major3.setVisible(false);
             major3.setEnabled(false);
-            notToPlay[1] = false;
-            functionsToPlay--;
+            check4.setSelected(false);
         }
-    }//GEN-LAST:event_mThiActionPerformed
+        debug1.setText("functions: " + functionsToPlay);
+    }//GEN-LAST:event_check3ItemStateChanged
 
-    private void pFifActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pFifActionPerformed
+    private void check4ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check4ItemStateChanged
         // TODO add your handling code here:
-        if (pFif.isSelected()) {
+        if (check4.isSelected()) {
+            functionsToPlay++;
+            perfect4.setVisible(true);
+            perfect4.setEnabled(true);
+            check3.setSelected(true);
+        } else {
+            functionsToPlay--;
+            perfect4.setVisible(false);
+            perfect4.setEnabled(false);
+            check5.setSelected(false);
+        }
+        debug1.setText("functions: " + functionsToPlay);
+    }//GEN-LAST:event_check4ItemStateChanged
+
+    private void check5ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check5ItemStateChanged
+        // TODO add your handling code here:
+        if (check5.isSelected()) {
+            functionsToPlay++;
             perfect5.setVisible(true);
             perfect5.setEnabled(true);
-            notToPlay[3] = true;
-            functionsToPlay++;
+            check4.setSelected(true);
         } else {
+            functionsToPlay--;
             perfect5.setVisible(false);
             perfect5.setEnabled(false);
-            notToPlay[3] = false;
-            functionsToPlay--;
+            check6.setSelected(false);
         }
-    }//GEN-LAST:event_pFifActionPerformed
+        debug1.setText("functions: " + functionsToPlay);
+    }//GEN-LAST:event_check5ItemStateChanged
 
-    private void mSixActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mSixActionPerformed
+    private void check6ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check6ItemStateChanged
         // TODO add your handling code here:
-        if (mSix.isSelected()) {
+        if (check6.isSelected()) {
+            functionsToPlay++;
             major6.setVisible(true);
             major6.setEnabled(true);
-            notToPlay[4] = true;
-            functionsToPlay++;
+            check5.setSelected(true);
         } else {
+            functionsToPlay--;
             major6.setVisible(false);
             major6.setEnabled(false);
-            notToPlay[4] = false;
-            functionsToPlay--;
+            check7.setSelected(false);
         }
-    }//GEN-LAST:event_mSixActionPerformed
+        debug1.setText("functions: " + functionsToPlay);
+    }//GEN-LAST:event_check6ItemStateChanged
 
-    private void mSevActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mSevActionPerformed
+    private void check7ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check7ItemStateChanged
         // TODO add your handling code here:
-        if (mSev.isSelected()) {
+        if (check7.isSelected()) {
+            functionsToPlay++;
             major7.setVisible(true);
             major7.setEnabled(true);
-            notToPlay[5] = true;
-            functionsToPlay++;
+            check6.setSelected(true);
         } else {
+            functionsToPlay--;
             major7.setVisible(false);
             major7.setEnabled(false);
-            notToPlay[5] = false;
-            functionsToPlay--;
+            check8.setSelected(false);
         }
-    }//GEN-LAST:event_mSevActionPerformed
+        debug1.setText("functions: " + functionsToPlay);
+    }//GEN-LAST:event_check7ItemStateChanged
 
-    private void octActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_octActionPerformed
+    private void check8ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check8ItemStateChanged
         // TODO add your handling code here:
-        if (oct.isSelected()) {
+        if (check8.isSelected()) {
+            functionsToPlay++;
             octave.setVisible(true);
             octave.setEnabled(true);
-            notToPlay[6] = true;
-            functionsToPlay++;
+            check7.setSelected(true);
         } else {
+            functionsToPlay--;
             octave.setVisible(false);
             octave.setEnabled(false);
-            notToPlay[6] = false;
-            functionsToPlay--;
         }
-    }//GEN-LAST:event_octActionPerformed
-
-    private void mSecPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_mSecPropertyChange
-        // TODO add your handling code here:
-
-    }//GEN-LAST:event_mSecPropertyChange
+        debug1.setText("functions: " + functionsToPlay);
+    }//GEN-LAST:event_check8ItemStateChanged
 
     public static void main() throws Exception {
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -461,180 +527,233 @@ public class GUIApp extends javax.swing.JFrame {
         });
     }
 
-    private void getFunctionToPlay() {
+    private void setFunctionToPlay() {
         int random;
         if (functionsToPlay == 1) {
             functionToPlay = 1;
         } else {
-            while (gotFunctionToPlay == false) {
-                random = (int) (Math.random() * 8 + 1);
-                if (random == 1) {
-                    functionToPlay = 1;
-                } else {
-                    for (int i = 0; i <= 6; i++) {
-                        if (notToPlay[i] == true && i + 2 == random) {
-                            functionToPlay = random;
-                            gotFunctionToPlay = true;
-                        }
-                    }
+            random = (int) (Math.random() * (double) functionsToPlay);
+            functionToPlay = random;
+            gotFunctionToPlay = true;
+        }
+
+    }
+
+    private void chooseStringAndFret() { //choose string and fret based on the funtion to play
+        functions[functionToPlay].work();
+        stringAndFretSet = true;
+    }
+
+    class SetSandFforUnison implements Worker {
+
+        public void work() {
+            int randomS, randomF;
+            randomS = (int) (Math.random() * 5);
+            randomF = (int) (Math.random() * 13);
+            firstStringToPlay = randomS;
+            firstFretToPlay = randomF;
+            nextStringToPlay = randomS;
+            nextFretToPlay = randomF;
+            stringAndFretSet = true;
+        }
+    }
+
+    class SetSandFforM2 implements Worker {
+
+        public void work() {
+            int randomS, randomF;
+            while (!stringAndFretSet) {
+                randomS = (int) (Math.random() * 5);
+                randomF = (int) (Math.random() * 13);
+                if (randomF <= 10) {
+                    firstStringToPlay = randomS;
+                    firstFretToPlay = randomF;
+                    nextStringToPlay = randomS;
+                    nextFretToPlay = randomF + 2;
+                    stringAndFretSet = true;
                 }
             }
         }
     }
 
-    private void chooseStringAndFret() { //choose string and fret based on the funtion to play
-        switch (functionToPlay) {
-            case 1:
-                setSandFforUnison();
-                break;
-            case 2:
-                setSandFforM2();
-                break;
-            case 3:
-                setSandFforM3();
-                break;
-            case 4:
-                setSandFforP4();
-                break;
-            case 5:
-                setSandFforP5();
-                break;
-            case 6:
-                setSandFforM6();
-                break;
-            case 7:
-                setSandFforM7();
-                break;
-            case 8:
-                setSandFforO();
-                break;
+    class SetSandFforM3 implements Worker {
 
-        }
-    }
-
-    private void setSandFforUnison() {
-        int randomS, randomF;
-        int nextS, nextF;
-        randomS = (int) Math.random() * 5;
-        randomF = (int) Math.random() * 13;
-        firstStringToPlay = randomS;
-        firstFretToPlay = randomF;
-        nextStringToPlay = randomS;
-        nextFretToPlay = randomF;
-        stringAndFretSet = true;
-    }
-
-    private void setSandFforM2() {
-        int randomS, randomF;
-        while (!stringAndFretSet) {
-            randomS = (int)Math.random()*5;
-            randomF = (int)Math.random()*13;
-            if(randomF<=10) {
-                firstStringToPlay = randomS;
-                firstFretToPlay = randomF;
-                nextStringToPlay = randomS;
-                nextFretToPlay = randomF+2;
-                stringAndFretSet = true;                
+        public void work() {
+            int randomS, randomF;
+            while (!stringAndFretSet) {
+                randomS = (int) (Math.random() * 5);
+                randomF = (int) (Math.random() * 13);
+                if (randomS <= 3 && randomF >= 1) {
+                    firstStringToPlay = randomS;
+                    firstFretToPlay = randomF;
+                    nextStringToPlay = randomS + 1;
+                    nextFretToPlay = randomF - 1;
+                    stringAndFretSet = true;
+                }
             }
         }
     }
 
-    private void setSandFforM3() {
-        int randomS, randomF;
-        while (!stringAndFretSet) {
-            randomS = (int)Math.random()*5;
-            randomF = (int)Math.random()*13;
-            if(randomS<=3&&randomF>=1) {
-                firstStringToPlay = randomS;
-                firstFretToPlay = randomF;
-                nextStringToPlay = randomS+1;
-                nextFretToPlay = randomF-1;
-                stringAndFretSet = true;
+    class SetSandFforP4 implements Worker {
+
+        public void work() {
+            int randomS, randomF;
+            while (!stringAndFretSet) {
+                randomS = (int) (Math.random() * 5);
+                randomF = (int) (Math.random() * 13);
+                if (randomS <= 3) {
+                    firstStringToPlay = randomS;
+                    firstFretToPlay = randomF;
+                    nextStringToPlay = randomS + 1;
+                    nextFretToPlay = randomF;
+                    stringAndFretSet = true;
+                }
             }
         }
     }
 
-    private void setSandFforP4() {
-        int randomS, randomF;
-        while (!stringAndFretSet) {
-            randomS = (int)Math.random()*5;
-            randomF = (int)Math.random()*13;
-            if(randomS<=3) {
-                firstStringToPlay = randomS;
-                firstFretToPlay = randomF;
-                nextStringToPlay = randomS+1;
-                nextFretToPlay = randomF;
-                stringAndFretSet = true;
+    class SetSandFforP5 implements Worker {
+
+        public void work() {
+            int randomS, randomF;
+            while (!stringAndFretSet) {
+                randomS = (int) (Math.random() * 5);
+                randomF = (int) (Math.random() * 13);
+                if (randomS <= 3 && randomF <= 10) {
+                    firstStringToPlay = randomS;
+                    firstFretToPlay = randomF;
+                    nextStringToPlay = randomS + 1;
+                    nextFretToPlay = randomF + 2;
+                    stringAndFretSet = true;
+                }
             }
         }
     }
 
-    private void setSandFforP5() {
-        int randomS, randomF;
-        while (!stringAndFretSet) {
-            randomS = (int)Math.random()*5;
-            randomF = (int)Math.random()*13;
-            if(randomS<=3&&randomF<=10) {
-                firstStringToPlay = randomS;
-                firstFretToPlay = randomF;
-                nextStringToPlay = randomS+1;
-                nextFretToPlay = randomF+2;
-                stringAndFretSet = true;
+    class SetSandFforM6 implements Worker {
+
+        public void work() {
+            int randomS, randomF;
+            while (!stringAndFretSet) {
+                randomS = (int) (Math.random() * 5);
+                randomF = (int) (Math.random() * 14);
+                if (randomS <= 2 && randomF >= 1) {
+                    firstStringToPlay = randomS;
+                    firstFretToPlay = randomF;
+                    nextStringToPlay = randomS + 2;
+                    nextFretToPlay = randomF - 1;
+                    stringAndFretSet = true;
+                }
             }
         }
     }
 
-    private void setSandFforM6() {
-        int randomS, randomF;
-        while (!stringAndFretSet) {
-            randomS = (int)Math.random()*5;
-            randomF = (int)Math.random()*14;
-            if(randomS<=2&&randomF>=1) {
-                firstStringToPlay = randomS;
-                firstFretToPlay = randomF;
-                nextStringToPlay = randomS+2;
-                nextFretToPlay = randomF-1;
-                stringAndFretSet = true;
+    class SetSandFforM7 implements Worker {
+
+        public void work() {
+            int randomS, randomF;
+            while (!stringAndFretSet) {
+                randomS = (int) (Math.random() * 5);
+                randomF = (int) (Math.random() * 14);
+                if (randomS <= 2 && randomF <= 11) {
+                    firstStringToPlay = randomS;
+                    firstFretToPlay = randomF;
+                    nextStringToPlay = randomS + 2;
+                    nextFretToPlay = randomF + 1;
+                    stringAndFretSet = true;
+                }
             }
         }
     }
 
-    private void setSandFforM7() {
-        int randomS, randomF;
-        while (!stringAndFretSet) {
-            randomS = (int)Math.random()*5;
-            randomF = (int)Math.random()*14;
-            if(randomS<=2&&randomF<=11) {
-                firstStringToPlay = randomS;
-                firstFretToPlay = randomF;
-                nextStringToPlay = randomS+2;
-                nextFretToPlay = randomF+1;
-                stringAndFretSet = true;
+    class SetSandFforO implements Worker {
+
+        public void work() {
+            int randomS, randomF;
+            while (!stringAndFretSet) {
+                randomS = (int) (Math.random() * 5);
+                randomF = (int) (Math.random() * 14);
+                if (randomS <= 2 && randomF <= 10) {
+                    firstStringToPlay = randomS;
+                    firstFretToPlay = randomF;
+                    nextStringToPlay = randomS + 2;
+                    nextFretToPlay = randomF + 2;
+                    stringAndFretSet = true;
+                }
             }
         }
     }
 
-    private void setSandFforO() {
-        int randomS, randomF;
-        while (!stringAndFretSet) {
-            randomS = (int)Math.random()*5;
-            randomF = (int)Math.random()*14;
-            if(randomS<=2&&randomF<=10) {
-                firstStringToPlay = randomS;
-                firstFretToPlay = randomF;
-                nextStringToPlay = randomS+2;
-                nextFretToPlay = randomF+2;
-                stringAndFretSet = true;
+    private void saveByteArraysOfFileToPlay() {
+        note1Byte = g.getByteArray(firstStringToPlay, firstFretToPlay);
+        note2Byte = g.getByteArray(nextStringToPlay, nextFretToPlay);
+    }
+
+    private void saveFilesAndPlay() {
+        if (played == false) {
+            try {
+                if (!filesSaved) {
+                    note1 = File.createTempFile("note1", ".wav");
+                    note1.deleteOnExit();
+                    note2 = File.createTempFile("note2", ".wav");
+                    note2.deleteOnExit();
+
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    out.write(note1Byte, 0, note1Byte.length);
+                    out.writeTo(new FileOutputStream(note1));
+                    out.close();
+
+                    ByteArrayOutputStream out1 = new ByteArrayOutputStream();
+                    out1.write(note2Byte, 0, note2Byte.length);
+                    out1.writeTo(new FileOutputStream(note2));
+                    out1.close();
+                }
+
+                Clip clip = AudioSystem.getClip();
+                clip.open(AudioSystem.getAudioInputStream(note1));
+                clip.start();
+                while (!clip.isRunning()) {
+                    Thread.sleep(10);
+                }
+                while (clip.isRunning()) {
+                    Thread.sleep(10);
+                }
+                clip.close();
+
+                Thread.sleep(2000);
+
+                clip = AudioSystem.getClip();
+                clip.open(AudioSystem.getAudioInputStream(note2));
+                clip.start();
+                while (!clip.isRunning()) {
+                    Thread.sleep(10);
+                }
+                while (clip.isRunning()) {
+                    Thread.sleep(10);
+                }
+                clip.close();
+
+                played = true;
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Error reading files!");
             }
+
         }
     }
-    public void createFilesToPlay () {
-        
-    }
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox check2;
+    private javax.swing.JCheckBox check3;
+    private javax.swing.JCheckBox check4;
+    private javax.swing.JCheckBox check5;
+    private javax.swing.JCheckBox check6;
+    private javax.swing.JCheckBox check7;
+    private javax.swing.JCheckBox check8;
     private javax.swing.JLabel correctAnsAmount;
+    private javax.swing.JLabel debug1;
+    private javax.swing.JLabel debug2;
+    private javax.swing.JLabel debug3;
+    private javax.swing.JLabel debug4;
     private javax.swing.JLabel fretBoard;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
@@ -647,21 +766,15 @@ public class GUIApp extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JCheckBox mSec;
-    private javax.swing.JCheckBox mSev;
-    private javax.swing.JCheckBox mSix;
-    private javax.swing.JCheckBox mThi;
     private javax.swing.JLabel major2;
     private javax.swing.JLabel major3;
     private javax.swing.JLabel major6;
     private javax.swing.JLabel major7;
-    private javax.swing.JCheckBox oct;
     private javax.swing.JLabel octave;
-    private javax.swing.JCheckBox pFif;
-    private javax.swing.JCheckBox pFou;
     private javax.swing.JLabel perfect4;
     private javax.swing.JLabel perfect5;
     private javax.swing.JLabel questionsAmount;
     private javax.swing.JLabel rooteNote;
+    private javax.swing.JButton trybut;
     // End of variables declaration//GEN-END:variables
 }

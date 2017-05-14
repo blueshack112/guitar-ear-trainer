@@ -13,7 +13,8 @@ public class Guitar implements Serializable {
             }
         }
     }
+
     public byte [] getByteArray (int string, int fret) {
-        return guitarSounds[string-1][fret].getByteArray();
+        return guitarSounds[string][fret].getByteArray();
     }    
 }
