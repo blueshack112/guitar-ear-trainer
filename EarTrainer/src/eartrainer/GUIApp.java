@@ -47,13 +47,16 @@ public class GUIApp extends javax.swing.JFrame {
     protected static int firstFretToPlay;
     protected static int nextStringToPlay;
     protected static int nextFretToPlay;
-    protected static boolean gotFunctionToPlay;
+    protected static boolean newQuestion;
+    protected static boolean waitingForAnswer;
     protected static boolean stringAndFretSet;
-    protected static boolean filesReady;
-    protected static boolean filesSaved;
     protected static int functionToPlay;
     protected static int functionsToPlay;
     protected static int playCounter;
+    protected static int questionsCounter;
+    protected static int answersCounter;
+    protected static int answer;
+    protected static int correctAnswer;
     protected static Worker functions[];
 
     public GUIApp() {
@@ -70,17 +73,20 @@ public class GUIApp extends javax.swing.JFrame {
 
         functionsToPlay = 1;
         playCounter = 1;
-        filesSaved = false;
+        newQuestion = true;
         stringAndFretSet = false;
-        filesReady = false;
-        gotFunctionToPlay = false;
-        major2.setVisible(false);
-        major3.setVisible(false);
-        perfect4.setVisible(false);
-        perfect5.setVisible(false);
-        major6.setVisible(false);
-        major7.setVisible(false);
-        octave.setVisible(false);
+        waitingForAnswer = false;
+        questionsCounter = 0;
+        answersCounter = 0;
+        answer = 0;
+        correctAnswer = 0;
+        a2.setVisible(false);
+        a3.setVisible(false);
+        a4.setVisible(false);
+        a5.setVisible(false);
+        a6.setVisible(false);
+        a7.setVisible(false);
+        a8.setVisible(false);
     }
 
     @SuppressWarnings("unchecked")
@@ -99,24 +105,22 @@ public class GUIApp extends javax.swing.JFrame {
         check6 = new javax.swing.JCheckBox();
         check7 = new javax.swing.JCheckBox();
         check8 = new javax.swing.JCheckBox();
-        rooteNote = new javax.swing.JLabel();
-        major2 = new javax.swing.JLabel();
-        major3 = new javax.swing.JLabel();
-        perfect4 = new javax.swing.JLabel();
-        perfect5 = new javax.swing.JLabel();
-        major6 = new javax.swing.JLabel();
-        major7 = new javax.swing.JLabel();
-        octave = new javax.swing.JLabel();
+        a1 = new javax.swing.JLabel();
+        a2 = new javax.swing.JLabel();
+        a3 = new javax.swing.JLabel();
+        a4 = new javax.swing.JLabel();
+        a5 = new javax.swing.JLabel();
+        a6 = new javax.swing.JLabel();
+        a7 = new javax.swing.JLabel();
+        a8 = new javax.swing.JLabel();
         fretBoard = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         questionsAmount = new javax.swing.JLabel();
         correctAnsAmount = new javax.swing.JLabel();
+        statusDisplay = new javax.swing.JTextField();
+        logDisplay = new javax.swing.JTextField();
         trybut = new javax.swing.JButton();
-        debug1 = new javax.swing.JLabel();
-        debug2 = new javax.swing.JLabel();
-        debug3 = new javax.swing.JLabel();
-        debug4 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
@@ -124,7 +128,6 @@ public class GUIApp extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Ear Trainer");
-        setMaximumSize(new java.awt.Dimension(571, 361));
         setMinimumSize(new java.awt.Dimension(569, 359));
         setResizable(false);
         getContentPane().setLayout(null);
@@ -241,44 +244,84 @@ public class GUIApp extends javax.swing.JFrame {
         jPanel1.add(jPanel2);
         jPanel2.setBounds(410, 30, 150, 290);
 
-        rooteNote.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/RootKnob.png"))); // NOI18N
-        jPanel1.add(rooteNote);
-        rooteNote.setBounds(230, 140, 30, 30);
+        a1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/RootKnob.png"))); // NOI18N
+        a1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                a1MouseClicked(evt);
+            }
+        });
+        jPanel1.add(a1);
+        a1.setBounds(230, 140, 30, 30);
 
-        major2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/Major2Knob.png"))); // NOI18N
-        major2.setEnabled(false);
-        jPanel1.add(major2);
-        major2.setBounds(230, 250, 30, 30);
+        a2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/Major2Knob.png"))); // NOI18N
+        a2.setEnabled(false);
+        a2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                a2MouseClicked(evt);
+            }
+        });
+        jPanel1.add(a2);
+        a2.setBounds(230, 250, 30, 30);
 
-        major3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/Major3Knob.png"))); // NOI18N
-        major3.setEnabled(false);
-        jPanel1.add(major3);
-        major3.setBounds(260, 80, 30, 30);
+        a3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/Major3Knob.png"))); // NOI18N
+        a3.setEnabled(false);
+        a3.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                a3MouseClicked(evt);
+            }
+        });
+        jPanel1.add(a3);
+        a3.setBounds(260, 80, 30, 30);
 
-        perfect4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/Perfect4Knob.png"))); // NOI18N
-        perfect4.setEnabled(false);
-        jPanel1.add(perfect4);
-        perfect4.setBounds(260, 140, 30, 30);
+        a4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/Perfect4Knob.png"))); // NOI18N
+        a4.setEnabled(false);
+        a4.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                a4MouseClicked(evt);
+            }
+        });
+        jPanel1.add(a4);
+        a4.setBounds(260, 140, 30, 30);
 
-        perfect5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/Perfect5Knob.png"))); // NOI18N
-        perfect5.setEnabled(false);
-        jPanel1.add(perfect5);
-        perfect5.setBounds(260, 250, 30, 30);
+        a5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/Perfect5Knob.png"))); // NOI18N
+        a5.setEnabled(false);
+        a5.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                a5MouseClicked(evt);
+            }
+        });
+        jPanel1.add(a5);
+        a5.setBounds(260, 250, 30, 30);
 
-        major6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/Major6Knob.png"))); // NOI18N
-        major6.setEnabled(false);
-        jPanel1.add(major6);
-        major6.setBounds(290, 80, 30, 30);
+        a6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/Major6Knob.png"))); // NOI18N
+        a6.setEnabled(false);
+        a6.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                a6MouseClicked(evt);
+            }
+        });
+        jPanel1.add(a6);
+        a6.setBounds(290, 80, 30, 30);
 
-        major7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/Major7Knob.png"))); // NOI18N
-        major7.setEnabled(false);
-        jPanel1.add(major7);
-        major7.setBounds(290, 140, 30, 30);
+        a7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/Major7Knob.png"))); // NOI18N
+        a7.setEnabled(false);
+        a7.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                a7MouseClicked(evt);
+            }
+        });
+        jPanel1.add(a7);
+        a7.setBounds(290, 140, 30, 30);
 
-        octave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/OctaveKnob.png"))); // NOI18N
-        octave.setEnabled(false);
-        jPanel1.add(octave);
-        octave.setBounds(290, 250, 30, 30);
+        a8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/eartrainer/KnobFolder/OctaveKnob.png"))); // NOI18N
+        a8.setEnabled(false);
+        a8.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                a8MouseClicked(evt);
+            }
+        });
+        jPanel1.add(a8);
+        a8.setBounds(290, 250, 30, 30);
 
         fretBoard.setIcon(new javax.swing.ImageIcon("C:\\HAA\\Ear trainer\\EarTrainer\\resources\\FretFinal.png")); // NOI18N
         jPanel1.add(fretBoard);
@@ -310,30 +353,24 @@ public class GUIApp extends javax.swing.JFrame {
         jPanel1.add(correctAnsAmount);
         correctAnsAmount.setBounds(110, 70, 50, 20);
 
-        trybut.setText("try");
+        statusDisplay.setForeground(new java.awt.Color(51, 255, 0));
+        statusDisplay.setOpaque(false);
+        jPanel1.add(statusDisplay);
+        statusDisplay.setBounds(10, 140, 140, 40);
+
+        logDisplay.setForeground(new java.awt.Color(0, 102, 255));
+        logDisplay.setOpaque(false);
+        jPanel1.add(logDisplay);
+        logDisplay.setBounds(10, 180, 140, 110);
+
+        trybut.setText("Play question");
         trybut.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 trybutMouseClicked(evt);
             }
         });
         jPanel1.add(trybut);
-        trybut.setBounds(20, 230, 47, 23);
-
-        debug1.setForeground(new java.awt.Color(0, 255, 0));
-        jPanel1.add(debug1);
-        debug1.setBounds(20, 90, 180, 30);
-
-        debug2.setForeground(new java.awt.Color(0, 255, 0));
-        jPanel1.add(debug2);
-        debug2.setBounds(20, 120, 100, 30);
-
-        debug3.setForeground(new java.awt.Color(0, 255, 0));
-        jPanel1.add(debug3);
-        debug3.setBounds(80, 220, 90, 30);
-
-        debug4.setForeground(new java.awt.Color(0, 255, 0));
-        jPanel1.add(debug4);
-        debug4.setBounds(50, 170, 100, 30);
+        trybut.setBounds(10, 110, 110, 23);
 
         jLabel1.setIcon(new javax.swing.ImageIcon("C:\\HAA\\Ear trainer\\EarTrainer\\resources\\wp101.jpg")); // NOI18N
         jLabel1.setOpaque(true);
@@ -362,137 +399,196 @@ public class GUIApp extends javax.swing.JFrame {
 
     private void trybutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_trybutMouseClicked
         // TODO add your handling code here:
-        if (gotFunctionToPlay == false) {
-            setFunctionToPlay();
-            debug2.setText("func: " + functionToPlay);
-        }
-        if (stringAndFretSet == false) {
-            chooseStringAndFret();
-            debug4.setText("string: " + firstStringToPlay);
-            debug3.setText("fret: " + firstFretToPlay);
-        }
-        if (filesSaved == false) {
-            saveByteArraysOfFileToPlay();
-            saveFilesAndPlay();
-        }
 
-        if (playCounter >= 6) {
-            gotFunctionToPlay = false;
+        if (newQuestion == true) {
             stringAndFretSet = false;
-            filesSaved = false;
-            playCounter =  1;
+            setFunctionToPlay();
+            logDisplay.setText(logDisplay.getText() + "\nNewQuestion initialized");
+            chooseStringAndFret();
+            saveByteArraysOfFileToPlay();
+            newQuestion = false;
+            playCounter = 1;
+            questionsCounter++;
+            waitingForAnswer = true;
+            questionsAmount.setText("" + questionsCounter);
         }
+        play();
     }//GEN-LAST:event_trybutMouseClicked
 
     private void check2ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check2ItemStateChanged
         // TODO add your handling code here:
         if (check2.isSelected()) {
             functionsToPlay++;
-            major2.setVisible(true);
-            major2.setEnabled(true);
+            a2.setVisible(true);
+            a2.setEnabled(true);
         } else {
             functionsToPlay--;
-            major2.setVisible(false);
-            major2.setEnabled(false);
+            a2.setVisible(false);
+            a2.setEnabled(false);
             check3.setSelected(false);
         }
-        debug1.setText("functions: " + functionsToPlay);
     }//GEN-LAST:event_check2ItemStateChanged
 
     private void check3ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check3ItemStateChanged
         // TODO add your handling code here:
         if (check3.isSelected()) {
             functionsToPlay++;
-            major3.setVisible(true);
-            major3.setEnabled(true);
+            a3.setVisible(true);
+            a3.setEnabled(true);
             check2.setSelected(true);
         } else {
             functionsToPlay--;
-            major3.setVisible(false);
-            major3.setEnabled(false);
+            a3.setVisible(false);
+            a3.setEnabled(false);
             check4.setSelected(false);
         }
-        debug1.setText("functions: " + functionsToPlay);
     }//GEN-LAST:event_check3ItemStateChanged
 
     private void check4ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check4ItemStateChanged
         // TODO add your handling code here:
         if (check4.isSelected()) {
             functionsToPlay++;
-            perfect4.setVisible(true);
-            perfect4.setEnabled(true);
+            a4.setVisible(true);
+            a4.setEnabled(true);
             check3.setSelected(true);
         } else {
             functionsToPlay--;
-            perfect4.setVisible(false);
-            perfect4.setEnabled(false);
+            a4.setVisible(false);
+            a4.setEnabled(false);
             check5.setSelected(false);
         }
-        debug1.setText("functions: " + functionsToPlay);
     }//GEN-LAST:event_check4ItemStateChanged
 
     private void check5ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check5ItemStateChanged
         // TODO add your handling code here:
         if (check5.isSelected()) {
             functionsToPlay++;
-            perfect5.setVisible(true);
-            perfect5.setEnabled(true);
+            a5.setVisible(true);
+            a5.setEnabled(true);
             check4.setSelected(true);
         } else {
             functionsToPlay--;
-            perfect5.setVisible(false);
-            perfect5.setEnabled(false);
+            a5.setVisible(false);
+            a5.setEnabled(false);
             check6.setSelected(false);
         }
-        debug1.setText("functions: " + functionsToPlay);
     }//GEN-LAST:event_check5ItemStateChanged
 
     private void check6ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check6ItemStateChanged
         // TODO add your handling code here:
         if (check6.isSelected()) {
             functionsToPlay++;
-            major6.setVisible(true);
-            major6.setEnabled(true);
+            a6.setVisible(true);
+            a6.setEnabled(true);
             check5.setSelected(true);
         } else {
             functionsToPlay--;
-            major6.setVisible(false);
-            major6.setEnabled(false);
+            a6.setVisible(false);
+            a6.setEnabled(false);
             check7.setSelected(false);
         }
-        debug1.setText("functions: " + functionsToPlay);
     }//GEN-LAST:event_check6ItemStateChanged
 
     private void check7ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check7ItemStateChanged
         // TODO add your handling code here:
         if (check7.isSelected()) {
             functionsToPlay++;
-            major7.setVisible(true);
-            major7.setEnabled(true);
+            a7.setVisible(true);
+            a7.setEnabled(true);
             check6.setSelected(true);
         } else {
             functionsToPlay--;
-            major7.setVisible(false);
-            major7.setEnabled(false);
+            a7.setVisible(false);
+            a7.setEnabled(false);
             check8.setSelected(false);
         }
-        debug1.setText("functions: " + functionsToPlay);
     }//GEN-LAST:event_check7ItemStateChanged
 
     private void check8ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_check8ItemStateChanged
         // TODO add your handling code here:
         if (check8.isSelected()) {
             functionsToPlay++;
-            octave.setVisible(true);
-            octave.setEnabled(true);
+            a8.setVisible(true);
+            a8.setEnabled(true);
             check7.setSelected(true);
         } else {
             functionsToPlay--;
-            octave.setVisible(false);
-            octave.setEnabled(false);
+            a8.setVisible(false);
+            a8.setEnabled(false);
         }
-        debug1.setText("functions: " + functionsToPlay);
     }//GEN-LAST:event_check8ItemStateChanged
+
+    private void a1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_a1MouseClicked
+        // TODO add your handling code here:
+        if (waitingForAnswer) {
+            waitingForAnswer = false;
+            answer = 0;
+            checkWin();
+        }
+    }//GEN-LAST:event_a1MouseClicked
+
+    private void a2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_a2MouseClicked
+        // TODO add your handling code here:
+        if (waitingForAnswer) {
+            waitingForAnswer = false;
+            answer = 1;
+            checkWin();
+        }
+    }//GEN-LAST:event_a2MouseClicked
+
+    private void a3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_a3MouseClicked
+        // TODO add your handling code here:
+        if (waitingForAnswer) {
+            waitingForAnswer = false;
+            answer = 2;
+            checkWin();
+        }
+    }//GEN-LAST:event_a3MouseClicked
+
+    private void a4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_a4MouseClicked
+        // TODO add your handling code here:
+        if (waitingForAnswer) {
+            waitingForAnswer = false;
+            answer = 3;
+            checkWin();
+        }
+    }//GEN-LAST:event_a4MouseClicked
+
+    private void a5MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_a5MouseClicked
+        // TODO add your handling code here:
+        if (waitingForAnswer) {
+            waitingForAnswer = false;
+            answer = 4;
+            checkWin();
+        }
+    }//GEN-LAST:event_a5MouseClicked
+
+    private void a6MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_a6MouseClicked
+        // TODO add your handling code here:
+        if (waitingForAnswer) {
+            waitingForAnswer = false;
+            answer = 5;
+            checkWin();
+        }
+    }//GEN-LAST:event_a6MouseClicked
+
+    private void a7MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_a7MouseClicked
+        // TODO add your handling code here:
+        if (waitingForAnswer) {
+            waitingForAnswer = false;
+            answer = 6;
+            checkWin();
+        }
+    }//GEN-LAST:event_a7MouseClicked
+
+    private void a8MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_a8MouseClicked
+        // TODO add your handling code here:
+        if (waitingForAnswer) {
+            waitingForAnswer = false;
+            answer = 7;
+            checkWin();
+        }
+    }//GEN-LAST:event_a8MouseClicked
 
     public static void main() throws Exception {
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -504,16 +600,24 @@ public class GUIApp extends javax.swing.JFrame {
                 if ("Windows".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
+
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(GUIApp.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUIApp.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(GUIApp.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUIApp.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(GUIApp.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUIApp.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(GUIApp.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUIApp.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -538,19 +642,14 @@ public class GUIApp extends javax.swing.JFrame {
 
     private void setFunctionToPlay() {
         int random;
-        if (functionsToPlay == 1) {
-            functionToPlay = 1;
-        } else {
-            random = (int) (Math.random() * (double) functionsToPlay);
-            functionToPlay = random;
-            gotFunctionToPlay = true;
-        }
-
+        random = (int) (Math.random() * (double) functionsToPlay);
+        functionToPlay = random;
+        correctAnswer = functionToPlay;
     }
 
     private void chooseStringAndFret() { //choose string and fret based on the funtion to play
-        functions[functionToPlay].work();
-        stringAndFretSet = true;
+        functions[functionsToPlay].work();
+
     }
 
     class SetSandFforUnison implements Worker {
@@ -696,28 +795,38 @@ public class GUIApp extends javax.swing.JFrame {
     private void saveByteArraysOfFileToPlay() {
         note1Byte = g.getByteArray(firstStringToPlay, firstFretToPlay);
         note2Byte = g.getByteArray(nextStringToPlay, nextFretToPlay);
+        try {
+            if (note1 != null && note1.exists()) {
+                note1.delete();
+            }
+            if (note2 != null && note2.exists()) {
+                note2.delete();
+            }
+
+            note1 = File.createTempFile("note1", ".wav");
+            note1.deleteOnExit();
+            note2 = File.createTempFile("note2", ".wav");
+            note2.deleteOnExit();
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            out.write(note1Byte, 0, note1Byte.length);
+            out.writeTo(new FileOutputStream(note1));
+            out.close();
+
+            ByteArrayOutputStream out1 = new ByteArrayOutputStream();
+            out1.write(note2Byte, 0, note2Byte.length);
+            out1.writeTo(new FileOutputStream(note2));
+            out1.close();
+        } catch (IOException ex) {
+            System.out.println("file writing error");
+        }
+
     }
 
-    private void saveFilesAndPlay() {
+    private void play() {
         if (playCounter <= 5) {
             try {
-                if (!filesSaved) {
-                    note1 = File.createTempFile("note1", ".wav");
-                    note1.deleteOnExit();
-                    note2 = File.createTempFile("note2", ".wav");
-                    note2.deleteOnExit();
-
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    out.write(note1Byte, 0, note1Byte.length);
-                    out.writeTo(new FileOutputStream(note1));
-                    out.close();
-
-                    ByteArrayOutputStream out1 = new ByteArrayOutputStream();
-                    out1.write(note2Byte, 0, note2Byte.length);
-                    out1.writeTo(new FileOutputStream(note2));
-                    out1.close();
-                }
-
+                statusDisplay.setText("Counter: " + playCounter);
                 Clip clip = AudioSystem.getClip();
                 clip.open(AudioSystem.getAudioInputStream(note1));
                 clip.start();
@@ -750,7 +859,30 @@ public class GUIApp extends javax.swing.JFrame {
         }
 
     }
+
+    private void checkWin() {
+        newQuestion = true;
+        logDisplay.setText(logDisplay.getText() + "\nanswer recieved");
+        if (answer == correctAnswer) {
+            answersCounter++;
+            correctAnsAmount.setText("" + answersCounter);
+            statusDisplay.setText("Correct Answer!!");
+        } else {
+            statusDisplay.setText("Wrong answer");
+        }
+       
+        
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel a1;
+    private javax.swing.JLabel a2;
+    private javax.swing.JLabel a3;
+    private javax.swing.JLabel a4;
+    private javax.swing.JLabel a5;
+    private javax.swing.JLabel a6;
+    private javax.swing.JLabel a7;
+    private javax.swing.JLabel a8;
     private javax.swing.JCheckBox check2;
     private javax.swing.JCheckBox check3;
     private javax.swing.JCheckBox check4;
@@ -759,10 +891,6 @@ public class GUIApp extends javax.swing.JFrame {
     private javax.swing.JCheckBox check7;
     private javax.swing.JCheckBox check8;
     private javax.swing.JLabel correctAnsAmount;
-    private javax.swing.JLabel debug1;
-    private javax.swing.JLabel debug2;
-    private javax.swing.JLabel debug3;
-    private javax.swing.JLabel debug4;
     private javax.swing.JLabel fretBoard;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
@@ -775,15 +903,9 @@ public class GUIApp extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JLabel major2;
-    private javax.swing.JLabel major3;
-    private javax.swing.JLabel major6;
-    private javax.swing.JLabel major7;
-    private javax.swing.JLabel octave;
-    private javax.swing.JLabel perfect4;
-    private javax.swing.JLabel perfect5;
+    private javax.swing.JTextField logDisplay;
     private javax.swing.JLabel questionsAmount;
-    private javax.swing.JLabel rooteNote;
+    private javax.swing.JTextField statusDisplay;
     private javax.swing.JButton trybut;
     // End of variables declaration//GEN-END:variables
 }
